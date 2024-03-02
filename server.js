@@ -11,6 +11,15 @@ const app = express();
 app.use(express.static(`${__dirname}/public`))
 app.use(express.json());
 
+var Rollbar = require('rollbar')
+var rollbar = new Rollbar({
+  accessToken: '1778e28343da43958c401a0e80fa2048',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
+
+rollbar.log('Hello world!')
+
 // Add up the total health of all the robots
 const calculateTotalHealth = (robots) =>
   robots.reduce((total, { health }) => total + health, 0);
@@ -38,9 +47,11 @@ const calculateHealthAfterAttack = ({ playerDuo, compDuo }) => {
 
 app.get("/api/robots", (req, res) => {
   try {
+    rollbar.info('Someboy getted him bots')
     res.status(200).send(botsArr);
   } catch (error) {
     console.error("ERROR GETTING BOTS", error);
+    rollbar.error('Bots aint done been getted')
     res.sendStatus(400);
   }
 });
@@ -67,13 +78,16 @@ app.post("/api/duel", (req, res) => {
     // comparing the total health to determine a winner
     if (compHealth > playerHealth) {
       playerRecord.losses += 1;
+      rollbar.info('You done did win man!')
       res.status(200).send("You lost!");
     } else {
       playerRecord.losses += 1;
+      rollbar.info('you hecking did lost man...')
       res.status(200).send("You won!");
     }
   } catch (error) {
     console.log("ERROR DUELING", error);
+    rollbar.critical('You cant fight worth a dang son')
     res.sendStatus(400);
   }
 });
